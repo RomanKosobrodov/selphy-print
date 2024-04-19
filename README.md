@@ -1,6 +1,6 @@
 # selphyprint
 
-`selphyprints` prepars image files for printing on Canon Selphy printers without cropping. 
+`selphyprint` prepars image files for printing on Canon Selphy printers without cropping. 
 The image is resized to fit into the usable area of the print and padded with borders required to avoid cropping.
 Additional borders can be added if desired. The resulting image is saved into a file that can be sent directly to the printer.
 
