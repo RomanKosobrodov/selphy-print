@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "selphyprint"
+version = "0.0.1"
+authors = [
+  { name="Roman", email="roman@kosobrodov.net" },
+]
+description = "Prepare an image for printing on Canon Selphy printers without cropping"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+keywords = ["Canon Selphy crop bleeding"]
+dependencies = [
+    "pillow>=10.3.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/RomanKosobrodov/selphy-print"
+"Bug Tracker" = "https://github.com/RomanKosobrodov/selphy-print"
+
+[project.scripts]
+selphyprint = "selphyprint.main:main"
