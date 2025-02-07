@@ -1,8 +1,7 @@
 import argparse
 import os
-import win32print
-import win32ui
-from PIL import Image, UnidentifiedImageError, ImageWin
+from PIL import Image, UnidentifiedImageError
+from selphyprint.printing import get_printer_name, print_image
 
 
 WIDTH = 150
@@ -30,12 +29,9 @@ Y1 = int(BOTTOM / INCH * DPI)
 W = WIDTH_PX - X1 - X0
 H = HEIGHT_PX - Y1 - Y0
 
-PRINTER_NAME = "SELPHY"
-PHYSICAL_WIDTH = 110
-PHYSICAL_HEIGHT = 111
 
 def process_image(input_filename, border_pixels):
-    background = Image.new(mode="RGB", size=(WIDTH_PX, HEIGHT_PX), color=(255, 255, 255))
+    processed = Image.new(mode="RGB", size=(WIDTH_PX, HEIGHT_PX), color=(255, 255, 255))
     try:
         with Image.open(input_filename, "r") as im:
             width, height = im.width, im.height
@@ -50,62 +46,17 @@ def process_image(input_filename, border_pixels):
             offset_x = int((WIDTH_PX - w) / 2)
             offset_y = int((HEIGHT_PX - h) / 2)
             im = im.resize(size=(w, h), resample=Image.Resampling.NEAREST)
-            background.paste(im, box=(offset_x, offset_y))
-            return background
+            processed.paste(im, box=(offset_x, offset_y))
+            return processed
     except UnidentifiedImageError:
         print(f"Unsupported image file \"{input_filename}\"")
 
-
-def get_printer_name():
-    for p in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL):
-        if PRINTER_NAME in p[2].upper():
-            return p[2]
-    return None
-
-
-def print_image(im, print_job_name):
-    printer_name = get_printer_name()
-    if printer_name is None:
-        print("Unable to find Canon SELPHY amongst local printers")
-        exit(4)
-
-    # bmp = im.convert("RGB").tobytes("raw", "BGR")
-    # printer = win32print.OpenPrinter(printer_name)
-
-
-    context = win32ui.CreateDC()
-    context.CreatePrinterDC(printer_name)
-    printer_width = context.GetDeviceCaps(PHYSICAL_WIDTH)
-    printer_height = context.GetDeviceCaps(PHYSICAL_HEIGHT)
-
-    context.StartDoc(print_job_name)
-    context.StartPage()
-
-    if im.width < im.height:
-        im = im.rotate(angle=90, expand=True)
-
-    dib = ImageWin.Dib(im)
-    output_handle = context.GetHandleOutput()
-    dib.draw(output_handle, (0, 0, printer_width, printer_height))
-
-    context.EndPage()
-    context.EndDoc()
-    context.DeleteDC()
-    #
-    #
-    # win32print.StartDocPrinter(printer, 1, (print_job_name, None, "RAW"))
-    # win32print.StartPagePrinter(printer)
-    # win32print.WritePrinter(printer, bmp)
-    # win32print.EndPagePrinter(printer)
-    # win32print.EndDocPrinter(printer)
-    # win32print.ClosePrinter(printer)
-
-
-def output_image(im, output_filename, print_job_name="image"):
+def output_image(im, output_filename, print_document_name="image"):
     if len(output_filename) > 0:
         im.save(output_filename, dpi=(DPI, DPI))
     else:
-        print_image(im, print_job_name)
+        printer_name = get_printer_name()
+        print_image(printer_name, print_document_name, im)
 
 
 def main():
@@ -146,7 +97,8 @@ def main():
 
     if os.path.isfile(args.input):
         result = process_image(args.input, border_px)
-        output_image(result, args.output, args.input)
+        document_name = f"Image \"{args.input}\""
+        output_image(result, args.output, document_name)
     else:
         root, subdirectory, files = next(os.walk(args.input))
         for filename in files:
