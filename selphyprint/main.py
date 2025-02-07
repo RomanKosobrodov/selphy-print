@@ -31,7 +31,7 @@ def process_image(input_filename, border_pixels, output_filename):
     try:
         with Image.open(input_filename, "r") as im:
             if im.height > im.width:
-                im = im.rotate(angle=90)
+                im = im.rotate(angle=270, expand=True)
             scale_x = W / im.width
             scale_y = H / im.height
             scale = min(scale_x, scale_y)
@@ -43,7 +43,7 @@ def process_image(input_filename, border_pixels, output_filename):
             background.paste(im, box=(offset_x, offset_y))
             background.save(output_filename, dpi=(DPI, DPI))
     except UnidentifiedImageError:
-        print(f"Unsupported image file \"{args.input}\"")
+        print(f"Unsupported image file \"{input_filename}\"")
 
 
 def main():
