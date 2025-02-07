@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "selphyprint"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
   { name="Roman", email="roman@kosobrodov.net" },
 ]
@@ -19,6 +19,7 @@ classifiers = [
 keywords = ["Canon Selphy crop bleeding"]
 dependencies = [
     "pillow>=10.3.0",
+    "pywin32==308"
 ]
 
 [project.urls]
