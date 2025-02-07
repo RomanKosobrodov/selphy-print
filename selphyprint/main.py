@@ -1,6 +1,8 @@
 import argparse
 import os
 from PIL import Image, UnidentifiedImageError
+import numpy as np
+
 
 WIDTH = 150
 HEIGHT = 100
@@ -25,11 +27,44 @@ Y1 = int(BOTTOM / INCH * DPI)
 W = WIDTH_PX - X1 - X0
 H = HEIGHT_PX - Y1 - Y0
 
+fill_color = {
+    "1": (0,),
+    "L": (255,),
+    "P": (0,),
+    "RGB": (255, 255, 255),
+    "RGBA": (255, 255, 255, 255),
+    "CMYK": (0, 0, 0, 0),
+    "YCbCr": (0, 0, 0, 0),
+    "LAB": (100, 0, 0),
+    "HSV": (0, 0, 255),
+    "I": (2 ** 15,),
+    "F": (1.0,),
+    "I;16": (65535,),
+    "I;16L": (65535,),
+    "I;16B": (65535,),
+    "I;16N": (65535,)
+}
+
+def convert_and_save(im, fn, dpi):
+    base, ext = os.path.splitext(fn)
+    out = im
+    if im.mode not in ("RGB", "L"):
+        if "I;16" in im.mode:
+            x = np.floor(np.asarray(im)/256)
+            out = Image.fromarray(x.astype(np.uint8))
+        if "I" == im.mode:
+            x = np.floor((np.asarray(im) + 2**15 - 1) / 256)
+            out = Image.fromarray(x.astype(np.uint8))
+        if "F" == im.mode:
+            x = 255 * np.asarray(im)
+            out = Image.fromarray(x.astype(np.uint8))
+    out.save(fn, dpi=dpi)
 
 def process_image(input_filename, border_pixels, output_filename):
-    background = Image.new(mode="RGB", size=(WIDTH_PX, HEIGHT_PX), color=(255, 255, 255))
     try:
         with Image.open(input_filename, "r") as im:
+            c = fill_color[im.mode]
+            background = Image.new(mode=im.mode, size=(WIDTH_PX, HEIGHT_PX), color=c)
             if im.height > im.width:
                 im = im.rotate(angle=270, expand=True)
             scale_x = W / im.width
@@ -41,7 +76,7 @@ def process_image(input_filename, border_pixels, output_filename):
             offset_x = int((WIDTH_PX - w) / 2)
             offset_y = int((HEIGHT_PX - h) / 2)
             background.paste(im, box=(offset_x, offset_y))
-            background.save(output_filename, dpi=(DPI, DPI))
+            convert_and_save(im, output_filename, dpi=(DPI, DPI))
     except UnidentifiedImageError:
         print(f"Unsupported image file \"{input_filename}\"")
 
