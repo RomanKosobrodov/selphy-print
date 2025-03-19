@@ -46,7 +46,6 @@ fill_color = {
 }
 
 def convert_and_save(im, fn, dpi):
-    base, ext = os.path.splitext(fn)
     out = im
     if im.mode not in ("RGB", "L"):
         if "I;16" in im.mode:
@@ -76,7 +75,7 @@ def process_image(input_filename, border_pixels, output_filename):
             offset_x = int((WIDTH_PX - w) / 2)
             offset_y = int((HEIGHT_PX - h) / 2)
             background.paste(im, box=(offset_x, offset_y))
-            convert_and_save(im, output_filename, dpi=(DPI, DPI))
+            convert_and_save(background, output_filename, dpi=(DPI, DPI))
     except UnidentifiedImageError:
         print(f"Unsupported image file \"{input_filename}\"")
 
